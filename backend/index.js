@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import cors from "cors";
+import dotenv from 'dotenv'
 
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
@@ -10,6 +11,9 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import mergeTypeDef from "./typeDefs/index.js";
 import mergeResolver from "./resolvers/index.js";
 
+dotenv.config();
+
+const app = express();
 const httpServer = http.createServer(app);
 
 const server = new ApolloServer({
@@ -30,7 +34,7 @@ app.use(
   // expressMiddleware accepts the same arguments:
   // an Apollo Server instance and optional configuration options
   expressMiddleware(server, {
-    context: async ({ req }) => ({ token: req.headers.token }),
+    context: async ({ req }) => ({ req }),
   }),
 );
 
