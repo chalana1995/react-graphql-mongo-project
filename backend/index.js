@@ -16,8 +16,11 @@ import mergeTypeDef from "./typeDefs/index.js";
 import mergeResolver from "./resolvers/index.js";
 
 import {connectDB} from './db/connectDB.js'
+import { GraphQLLocalStrategy, buildContext } from "graphql-passport";
+import { configurePassport } from "./passport/passport.config.js";
 
 dotenv.config();
+configurePassport();
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -59,14 +62,17 @@ await server.start();
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
 app.use(
-  '/',
-  cors(),
+  "/",
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true
+  }),
   express.json(),
   // expressMiddleware accepts the same arguments:
   // an Apollo Server instance and optional configuration options
   expressMiddleware(server, {
-    context: async ({ req }) => ({ req }),
-  }),
+    context: async ({ req, res }) => buildContext({ req, res }),
+  })
 );
 
 // Modified server startup
