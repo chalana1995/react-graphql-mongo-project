@@ -49,7 +49,21 @@ const userResolver = {
         await context.login(user);
         return user;
       } catch (error) {
-         console.error("Error in signUp", error);
+         console.error("Error in login", error);
+         throw new Error(error.message || "Internal Server Error");
+      }
+    },
+    logout: async(_,_,context) => {
+      try {
+        await context.logout();
+        req.session.destroy((error) => {
+          if(error) throw error
+        })
+
+        res.clearCookie("connect.sid");
+        return {message: "Logged out successfully"}
+      } catch (error) {
+         console.error("Error in logout", error);
          throw new Error(error.message || "Internal Server Error");
       }
     }
