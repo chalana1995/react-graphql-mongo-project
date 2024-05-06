@@ -25,58 +25,71 @@ const userResolver = {
         const girlProfilePic = `https://avatar.iran.liara.run/public/girl?username=${username}`;
 
         const newUser = new User({
-            username,
-            name,
-            password: hashPassword,
-            gender,
-            profilePicture: gender === "male" ? boyProfilePic : girlProfilePic
-        })
+          username,
+          name,
+          password: hashPassword,
+          gender,
+          profilePicture: gender === "male" ? boyProfilePic : girlProfilePic,
+        });
 
         await newUser.save();
         await context.login(newUser);
-        return newUser
-
+        return newUser;
       } catch (error) {
         console.error("Error in signUp", error);
-        throw new Error(error.message || "Internal Server Error")
+        throw new Error(error.message || "Internal Server Error");
       }
     },
-    login: async(_,{input},context) => {
+    login: async (_, { input }, context) => {
       try {
-        const {username,passoword} = input;
-        const {user} = await context.authenticate("graphql-local",{username,passoword});
+        const { username, passoword } = input;
+        const { user } = await context.authenticate("graphql-local", {
+          username,
+          passoword,
+        });
 
         await context.login(user);
         return user;
       } catch (error) {
-         console.error("Error in login", error);
-         throw new Error(error.message || "Internal Server Error");
+        console.error("Error in login", error);
+        throw new Error(error.message || "Internal Server Error");
       }
     },
-    logout: async(_,_,context) => {
+    logout: async (_, _, context) => {
       try {
         await context.logout();
         req.session.destroy((error) => {
-          if(error) throw error
-        })
+          if (error) throw error;
+        });
 
         res.clearCookie("connect.sid");
-        return {message: "Logged out successfully"}
+        return { message: "Logged out successfully" };
       } catch (error) {
-         console.error("Error in logout", error);
-         throw new Error(error.message || "Internal Server Error");
+        console.error("Error in logout", error);
+        throw new Error(error.message || "Internal Server Error");
       }
-    }
+    },
   },
   Query: {
-    users: (_, _, { req, res }) => {
-      return users;
+    authUser: async (_, _, context) => {
+      try {
+        const user = await context.getUser();
+        return user;
+      } catch (error) {
+        console.error(error);
+        throw new Error("Internal Server Error");
+      }
     },
-    user: (_, { userId }) => {
-      return users.find((user) => user._id === userId);
+    user: async (_, { userId }) => {
+      try {
+        const user =  await User.findById(userId);
+      } catch (error) {
+        console.error("Error in user Query",error);
+        throw new Error("Internal Server Error");
+      }
     },
   },
-  Mutation: {},
+  //  ADD User /Transaction
 };
 
 export default userResolver;
